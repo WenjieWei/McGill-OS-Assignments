@@ -1,7 +1,13 @@
-/**
- *   This is the code of inter process communication.
- *   Author: Wenjie Wei, McGILL ID: 260685967
- */
+/*
+----------------- COMP 310/ECSE 427 Winter 2018 -----------------
+I declare that the awesomeness below is a genuine piece of work
+and falls under the McGill code of conduct, to the best of my knowledge.
+-----------------------------------------------------------------
+*/ 
+
+//Name: Wenjie Wei
+//McGill ID: 260685967
+
 
 #include <stdio.h>
 #include <unistd.h>
@@ -28,7 +34,7 @@ int main(){
         close(pfildes[1]);  //close the write end of the pipe in parent
         read(pfildes[0], buffer, sizeof(buffer));
         printf("%s", buffer);
-        
+
         return 0;
     }
 }

@@ -1,9 +1,12 @@
+/*
+----------------- COMP 310/ECSE 427 Winter 2018 -----------------
+I declare that the awesomeness below is a genuine piece of work
+and falls under the McGill code of conduct, to the best of my knowledge.
+-----------------------------------------------------------------
+*/ 
 
-
-/**
- *  This is the code of redirection.
- *  Author: Wenjie Wei, McGILL ID: 260685967
- */
+//Name: Wenjie Wei
+//McGill ID: 260685967
 
 #include <stdio.h>
 #include <unistd.h>
