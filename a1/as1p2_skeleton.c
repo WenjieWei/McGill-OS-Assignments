@@ -53,40 +53,50 @@ void addToJobList(char *args[])
     if (head_job == NULL)
     {
         //init the job number with 1
-        
+        job->number = 1;
+
         //set its pid from the global variable process_id
+        job->pid = process_id;
         
         //cmd can be set to arg[0]
+        job->cmd = *arg[0];
         
         //set the job->next to point to NULL.
+        job->next = NULL;
         
         //set the job->spawn using time function
         job->spawn = (unsigned int)time(NULL);
         //set head_job to be the job
+        head_job = &job;
         
         //set current_job to be head_job
-        
+        current_job = &head_job;
     }
 
     //Otherwise create a new job node and link the current node to it
     else
     {
         //point current_job to head_job
-        
+        current_job = &head_job;
         //traverse the linked list to reach the last job
+        while(current_job->next != NULL){
+            current_job = &next;
+        }
+        //now current_job points to the last job in the list
        
-
-
-
         //init all values of the job like above num,pid,cmd.spawn
-        
+        job->number = 1;
+        job->pid = process_id;
+        job->cmd = *args[0];
+        job->next = NULL;
+        job->spawn = (unsigned int)time(NULL);        
         
         //make next of current_job point to job
-        
+        current_job->next = &job;
         //make job to be current_job
-        
+        current_job = current_job->next;
         //set the next of job to be NULL
-        
+        job->next = NULL;
     }
 }
 
