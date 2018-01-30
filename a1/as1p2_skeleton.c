@@ -8,6 +8,7 @@ and falls under the McGill code of conduct, to the best of my knowledge.
 //Please enter your name and McGill ID below
 //Name: Wenjie Wei
 //McGill ID: 260685967
+//this is a test
 
 //all the header files you would require
 #include <stdio.h>  //for standard IO
