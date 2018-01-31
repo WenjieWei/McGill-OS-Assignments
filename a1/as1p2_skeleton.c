@@ -8,7 +8,6 @@ and falls under the McGill code of conduct, to the best of my knowledge.
 //Please enter your name and McGill ID below
 //Name: Wenjie Wei
 //McGill ID: 260685967
-//this is a test
 
 //all the header files you would require
 #include <stdio.h>  //for standard IO
@@ -54,50 +53,50 @@ void addToJobList(char *args[])
     if (head_job == NULL)
     {
         //init the job number with 1
-        job->number = 1;
+        //job->number = 1;
 
         //set its pid from the global variable process_id
-        job->pid = process_id;
+        //job->pid = process_id;
         
         //cmd can be set to arg[0]
-        job->cmd = *arg[0];
+        //job->cmd = *arg[0];
         
         //set the job->next to point to NULL.
-        job->next = NULL;
+        //job->next = NULL;
         
         //set the job->spawn using time function
         job->spawn = (unsigned int)time(NULL);
         //set head_job to be the job
-        head_job = &job;
+        //head_job = &job;
         
         //set current_job to be head_job
-        current_job = &head_job;
+        //current_job = &head_job;
     }
 
     //Otherwise create a new job node and link the current node to it
     else
     {
         //point current_job to head_job
-        current_job = &head_job;
+        //current_job = &head_job;
         //traverse the linked list to reach the last job
-        while(current_job->next != NULL){
-            current_job = &next;
-        }
+        // while(current_job->next != NULL){
+        //     current_job = &next;
+        // }
         //now current_job points to the last job in the list
        
         //init all values of the job like above num,pid,cmd.spawn
-        job->number = 1;
-        job->pid = process_id;
-        job->cmd = *args[0];
-        job->next = NULL;
-        job->spawn = (unsigned int)time(NULL);        
+        // job->number = 1;
+        // job->pid = process_id;
+        // job->cmd = *args[0];
+        // job->next = NULL;
+        // job->spawn = (unsigned int)time(NULL);        
         
         //make next of current_job point to job
-        current_job->next = &job;
+        // current_job->next = &job;
         //make job to be current_job
-        current_job = current_job->next;
+        // current_job = current_job->next;
         //set the next of job to be NULL
-        job->next = NULL;
+        // job->next = NULL;
     }
 }
 
@@ -330,25 +329,43 @@ int main(void)
         }
         else if (!strcmp("fg", args[0]))
         {
-            //bring a background process to foregrounf
+            //bring a background process to foreground
             waitforjob(args[1]);
         }
         else if (!strcmp("cd", args[0]))
         {
             int result = 0;
+
             // if no destination directory given 
             // change to home directory 
-
-            //if given directory does not exist
-            //print directory does not exit
-
-            //if everthing is fine 
-            //change to destination directory 
+            if(args[1] == NULL)
+            {
+                char *home = getenv("HOME");
+                result = chdir(home);
+            }            
+            else
+            {
+                //if given directory does not exist
+                //print directory does not exit
+                result = chdir(args[1]);
+                if(result != 0)
+                {
+                    printf("Failed to change directory: %s does not exist\n", args[1]);
+                }
+                //if everthing is fine 
+                //change to destination directory 
+                // else
+                // {
+                //     result = chdir(args[1]);
+                // }
+            }
         }
         else if (!strcmp("pwd", args[0]))
         {
             //use getcwd and print the current working directory
-            
+            char cwdbuf[1024];
+            getcwd(cwdbuf, sizeof(cwdbuf));
+            printf("CWD is: %s\n", cwdbuf);
         }
         else if(!strcmp("wc",args[0]))
         {
@@ -410,14 +427,14 @@ int main(void)
                     //while you use open (man 2 open) to open file
 
                     //set ">" and redirected filename to NULL
-                    args[i] = NULL;
-                    args[i + 1] = NULL;
+                    // args[i] = NULL;
+                    // args[i + 1] = NULL;
 
-                    //run your command
-                    execvp(args[0], args);
+                    // //run your command
+                    // execvp(args[0], args);
 
-                    //restore to stdout
-                    fflush(stdout);
+                    // //restore to stdout
+                    // fflush(stdout);
                 }
                 else
                 {
