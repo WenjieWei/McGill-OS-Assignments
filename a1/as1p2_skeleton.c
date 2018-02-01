@@ -214,7 +214,13 @@ int wordCount(char *filename, char *flag)
 
     //The file does not exist.
     if(fildes == NULL)
-        printf("COuld not openfile: %s", filename);
+    {
+        printf("The file does not exist\n");
+        if(!strcmp(flag, "-w") || !strcmp(flag, "-l"))
+            printf("Unrecognized flag.\n");
+        
+        return cnt;
+    }
 
     //file descriptor is a valid descriptor
     else
@@ -246,7 +252,7 @@ int wordCount(char *filename, char *flag)
         else
         //the argument is not "-l" or "-w"
         {
-            printf("Invalid argument");
+            printf("Unrecognized flag\n");
         }
         return cnt;
     }
@@ -405,9 +411,6 @@ int main(void)
                 if(*home != NULL)
                 {
                     result = chdir(home);
-                } else {
-                    printf("cd: NO $HOME variable declared in the environment\n");
-                }
             }
             //go to specified directory
             else
@@ -417,7 +420,7 @@ int main(void)
                 result = chdir(args[1]);
                 if (result == -1)
                 {
-                    fprintf(stderr, "Failed to change directory: %s does not exist\n", args[1]);
+                    fprintf(stderr, "cd: %s: No such file or directory", args[1]);
                 }
                 //if everthing is fine
                 //change to destination directory
