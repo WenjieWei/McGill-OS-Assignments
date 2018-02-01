@@ -123,15 +123,20 @@ void refreshJobList()
         //use waitpid to init ret_pid variable
         ret_pid = waitpid(current_job->pid, NULL, WNOHANG);
         //one of the below needs node removal from linked list
+        //if ret_pid == 0, no change in the child state.
+        //if ret_pid == -1, there is an error.
+        //on success, return pid of the child whose status has changed.
         if (ret_pid == 0)
         {
-            //what does this mean
-            //do the needful
+            //the child state does not change
+
         }
         else
         {
-            //what does this mean
-            //do the needful
+            //assume that there is no error, the process specified by pid has changed status
+            //therefore, remove the node that is specified by pid.
+
+
         }
     }
     return;
@@ -177,56 +182,44 @@ void waitForEmptyLL(int nice, int bg)
 //function to perform word count
 int wordCount(char *filename, char *flag)
 {
-    int cnt;
-    int fildes = open(filename, O_RDONLY);
+    int cnt = 0;
+    FILE *fildes = fopen(filename, "r");
 
     //The file does not exist.
-    if (fildes < 0)
-    {
-        printf("The file %s does not exist.", filename);
-        return 0;
-    }
+    if(fildes == NULL)
+        printf("COuld not openfile: %s", filename);
 
     //file descriptor is a valid descriptor
     else
     {
-        char char_buf[1024];
-        ssize_t length;
-        void *buf = char_buf;
-        char *ptr;  //this pointer is created since read() function takes the second input as void*.
-        length = read(fildes, buf, sizeof(char_buf));
-        while(length > 0)
+        if(!strcmp(flag, "-l"))
+        //need to count lines here.
         {
-            ptr = buf;
-            //if flag is l
-            //count the number of lines in the file
-            //set it in cnt
-            if (*flag == 'l')
+            int lines = 0;
+            char charRead;
+            while(!feof(fildes))
             {
-                if(*ptr == '\n')
-                    cnt++;
-                
-                ptr++;
-                length--;
+                charRead = fgetc(fildes);
+                if(charRead == '\n')
+                    lines++;
             }
-
-            //if flag is w
-            //count the number of words in the file
-            //set it in cnt
-            else if (*flag == 'w')
+            cnt = lines;
+        }
+        else if(!strcmp(flag, "-w"))
+        //count words here
+        {
+            char charBuf[1024];
+            //Store all words as separate strings into array charBuf.
+            while(!feof(fildes))
             {
-                if(*ptr == '%s')
-                    cnt++;
-                
-                ptr++;
-                length--;
+                fscanf(fildes, "%s", charBuf);
+                cnt++;
             }
-
-            // if the argument is invalid
-            else{
-                printf("Invalid argument");
-                length = 0;
-            }
+        }
+        else
+        //the argument is not "-l" or "-w"
+        {
+            printf("Invalid argument");
         }
         return cnt;
     }
@@ -365,6 +358,7 @@ int main(void)
         else if (!strcmp("exit", args[0]))
         {
             //exit the execution of endless while loop
+            //TODO: kill all processes before exiting
             exit(0);
         }
         else if (!strcmp("fg", args[0]))
@@ -381,16 +375,22 @@ int main(void)
             if (args[1] == NULL)
             {
                 char *home = getenv("HOME");
-                result = chdir(home);
+                if(*home != NULL)
+                {
+                    result = chdir(home);
+                } else {
+                    printf("cd: NO $HOME variable declared in the environment\n");
+                }
             }
+            //go to specified directory
             else
             {
                 //if given directory does not exist
                 //print directory does not exit
                 result = chdir(args[1]);
-                if (result != 0)
+                if (result == -1)
                 {
-                    printf("Failed to change directory: %s does not exist\n", args[1]);
+                    fprintf(stderr, "Failed to change directory: %s does not exist\n", args[1]);
                 }
                 //if everthing is fine
                 //change to destination directory
@@ -400,14 +400,18 @@ int main(void)
         {
             //use getcwd and print the current working directory
             char cwdbuf[1024];
-            getcwd(cwdbuf, sizeof(cwdbuf));
-            printf("CWD is: %s\n", cwdbuf);
+            //getcwd(cwdbuf, sizeof(cwdbuf));
+            //printf("CWD is: %s\n", cwdbuf);
+            if(getcwd(cwdbuf, sizeof(cwdbuf)) == NULL)
+                perror("getcwd() error.");
+            else
+                printf("CWD Is: %s\n", cwdbuf);
         }
         else if (!strcmp("wc", args[0]))
         {
             //call the word count function
             int count = wordCount(args[2], args[1]);
-            printf(count);
+            printf("%d", count);
         }
         else
         {

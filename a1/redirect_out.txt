@@ -1,1 +1,3 @@
 Second: Print to redirect_out.txt
+This is a test. wc -l should output 2.
+
