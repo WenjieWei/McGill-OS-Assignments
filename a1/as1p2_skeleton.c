@@ -53,50 +53,52 @@ void addToJobList(char *args[])
     if (head_job == NULL)
     {
         //init the job number with 1
-        //job->number = 1;
+        job->number = 1;
 
         //set its pid from the global variable process_id
-        //job->pid = process_id;
+        job->pid = process_id;
 
         //cmd can be set to arg[0]
-        //job->cmd = *arg[0];
+        job->cmd = args[0];
 
         //set the job->next to point to NULL.
-        //job->next = NULL;
+        job->next = NULL;
 
         //set the job->spawn using time function
         job->spawn = (unsigned int)time(NULL);
         //set head_job to be the job
-        //head_job = &job;
+        head_job = job;
 
         //set current_job to be head_job
-        //current_job = &head_job;
+        current_job = head_job;
     }
 
     //Otherwise create a new job node and link the current node to it
     else
     {
+        //prev_num holds the number of current_job
+        int prev_num = current_job->number;
         //point current_job to head_job
-        //current_job = &head_job;
+        current_job = head_job;
         //traverse the linked list to reach the last job
-        // while(current_job->next != NULL){
-        //     current_job = &next;
-        // }
+        while(current_job->next != NULL){
+            current_job = current_job->next;
+        }
         //now current_job points to the last job in the list
 
         //init all values of the job like above num,pid,cmd.spawn
-        // job->number = 1;
-        // job->pid = process_id;
-        // job->cmd = *args[0];
-        // job->next = NULL;
-        // job->spawn = (unsigned int)time(NULL);
+        job->number = prev_num+1;
+        job->pid = process_id;
+        job->cmd = args[0];
+        job->next = NULL;
+        job->spawn = (unsigned int)time(NULL);
 
         //make next of current_job point to job
-        // current_job->next = &job;
+        current_job->next = job;
         //make job to be current_job
-        // current_job = current_job->next;
+        current_job = current_job->next;
         //set the next of job to be NULL
-        // job->next = NULL;
+        current_job->next = NULL;
     }
 }
 
@@ -115,28 +117,50 @@ void refreshJobList()
 
     //perform init for pointers
     current_job = head_job;
-    prev_job = head_job;
+    prev_job->next = head_job;
+
+    //current_num records the number of the current node
+    int current_num;
 
     //traverse through the linked list
     while (current_job != NULL)
     {
+        current_num = current_job->number;
         //use waitpid to init ret_pid variable
         ret_pid = waitpid(current_job->pid, NULL, WNOHANG);
         //one of the below needs node removal from linked list
-        //if ret_pid == 0, no change in the child state.
+        //if ret_pid == 0, there is no change in status, i.e. still runing
         //if ret_pid == -1, there is an error.
-        //on success, return pid of the child whose status has changed.
-        if (ret_pid == 0)
+        //if ret_pid == pid, the process has terminated.
+        if (ret_pid)
         {
-            //the child state does not change
-
+            //success. THe child specified by the pid has been terminated.
+            //now link the next of prev_job with the next node of current_job
+            prev_job->next = current_job->next;
+            //then point the current next to NULL to detach the current job.
+            current_job->next = NULL;
+            //change the current job to the next job
+            current_job = prev_job->next;
+            //finally change the number of the next job
+            current_job->number = current_num;
+        }
+        else if(ret_pid == 0)
+        {
+            //there is no change in the process status, i.e. not terminated
+            //then change the link sequence
+            //make sure to verify the process number at the end, if current is not pointing to null
+            prev_job = current_job;
+            current_job = current_job->next;
+            if(current_job != NULL)
+            {
+                current_job->number = current_num+1;
+            }
         }
         else
         {
-            //assume that there is no error, the process specified by pid has changed status
-            //therefore, remove the node that is specified by pid.
-
-
+            //there is an error.
+            printf("There is an error refreshing the list. Exiting\n");
+            return;
         }
     }
     return;
@@ -152,13 +176,16 @@ void listAllJobs()
     refreshJobList();
 
     //init current_job with head_job
-
+    current_job = head_job;
     //heading row print only once.
     printf("\nID\tPID\tCmd\tstatus\tspawn-time\n");
 
     //traverse the linked list and print using the following statement for each job
-    printf("%d\t%d\t%s\tRUNNING\t%s\n", current_job->number, current_job->pid, current_job->cmd, ctime(&(current_job->spawn)));
-
+    while(current_job != NULL)
+    {
+        printf("%d\t%d\t%s\tRUNNING\t%s\n", current_job->number, current_job->pid, current_job->cmd, ctime(&(current_job->spawn)));
+        current_job = current_job->next;
+    }
     return;
 }
 
