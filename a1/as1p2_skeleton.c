@@ -296,18 +296,20 @@ int waitforjob(char *jobnc)
     int jobFound = 0;
     while(trv != NULL)
     {
-        if(trv->pid == jobn)
+        if(trv->pid == jobn || trv->number == jobn)
         {
             jobFound = 1;
             break;
         }
+        else
+            trv = trv->next;
     }
     //if correspoding job is found
     //use its pid to make the parent process wait.
     //waitpid with proper argument needed here
     if(jobFound)
     {
-        
+        waitpid(trv->pid, NULL, WUNTRACED);
     }
     return 0;
 }
