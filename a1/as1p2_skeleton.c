@@ -75,14 +75,15 @@ void addToJobList(char *args[])
 
     //Otherwise create a new job node and link the current node to it
     else
-    {
-        //prev_num holds the number of current_job
-        int prev_num = current_job->number;
+    {        
         //point current_job to head_job
         current_job = head_job;
+        //store the number of the previous job
+        int prev_num = 1;
         //traverse the linked list to reach the last job
         while(current_job->next != NULL){
             current_job = current_job->next;
+            prev_num++;
         }
         //now current_job points to the last job in the list
 
@@ -90,13 +91,12 @@ void addToJobList(char *args[])
         job->number = prev_num+1;
         job->pid = process_id;
         job->cmd = args[0];
-        job->next = NULL;
         job->spawn = (unsigned int)time(NULL);
 
         //make next of current_job point to job
         current_job->next = job;
         //make job to be current_job
-        current_job = current_job->next;
+        current_job = job;
         //set the next of job to be NULL
         current_job->next = NULL;
     }
@@ -117,14 +117,20 @@ void refreshJobList()
 
     //perform init for pointers
     current_job = head_job;
-    prev_job->next = head_job;
 
     //current_num records the number of the current node
     int current_num;
+    //init current_job with head_job
+    current_job = head_job;
+    prev_job = head_job;
 
     //traverse through the linked list
     while (current_job != NULL)
     {
+        int isHead = 0;        
+        if(current_job == head_job)
+            isHead = 1;
+
         current_num = current_job->number;
         //use waitpid to init ret_pid variable
         ret_pid = waitpid(current_job->pid, NULL, WNOHANG);
@@ -132,16 +138,32 @@ void refreshJobList()
         //if ret_pid == 0, there is no change in status, i.e. still runing
         //if ret_pid == -1, there is an error.
         //if ret_pid == pid, the process has terminated.
-        if (ret_pid)
+        if (ret_pid && isHead)
         {
-            //success. THe child specified by the pid has been terminated.
-            //now link the next of prev_job with the next node of current_job
+            if(head_job->next == NULL)
+            {
+                //if the head is the only node in the list
+                //then simply clear it
+                head_job = NULL;
+                current_job = NULL;
+                prev_job = NULL;
+            }
+            else
+            {
+                //if the head is not the only node
+                //make the next node be the head
+                prev_job = current_job->next;
+                free(current_job);
+                current_job = prev_job;
+                head_job = current_job;
+                current_job->number = current_num;
+            }
+        }
+        else if(ret_pid && !isHead)
+        {
             prev_job->next = current_job->next;
-            //then point the current next to NULL to detach the current job.
-            current_job->next = NULL;
-            //change the current job to the next job
+            free(current_job);
             current_job = prev_job->next;
-            //finally change the number of the next job
             current_job->number = current_num;
         }
         else if(ret_pid == 0)
@@ -151,18 +173,13 @@ void refreshJobList()
             //make sure to verify the process number at the end, if current is not pointing to null
             prev_job = current_job;
             current_job = current_job->next;
-            if(current_job != NULL)
-            {
-                current_job->number = current_num+1;
-            }
         }
         else
         {
-            //there is an error.
-            printf("There is an error refreshing the list. Exiting\n");
-            return;
+            break;
         }
     }
+
     return;
 }
 
@@ -177,6 +194,7 @@ void listAllJobs()
 
     //init current_job with head_job
     current_job = head_job;
+    
     //heading row print only once.
     printf("\nID\tPID\tCmd\tstatus\tspawn-time\n");
 
@@ -214,13 +232,7 @@ int wordCount(char *filename, char *flag)
 
     //The file does not exist.
     if(fildes == NULL)
-    {
-        printf("The file does not exist\n");
-        if(!strcmp(flag, "-w") || !strcmp(flag, "-l"))
-            printf("Unrecognized flag.\n");
-        
-        return cnt;
-    }
+        printf("COuld not openfile: %s", filename);
 
     //file descriptor is a valid descriptor
     else
@@ -252,7 +264,7 @@ int wordCount(char *filename, char *flag)
         else
         //the argument is not "-l" or "-w"
         {
-            printf("Unrecognized flag\n");
+            printf("Invalid argument");
         }
         return cnt;
     }
@@ -281,11 +293,22 @@ int waitforjob(char *jobnc)
     trv = head_job;
     //traverse through linked list and find the corresponding job
     //hint : traversal done in other functions too
-
+    int jobFound = 0;
+    while(trv != NULL)
+    {
+        if(trv->pid == jobn)
+        {
+            jobFound = 1;
+            break;
+        }
+    }
     //if correspoding job is found
     //use its pid to make the parent process wait.
     //waitpid with proper argument needed here
-
+    if(jobFound)
+    {
+        
+    }
     return 0;
 }
 
@@ -397,6 +420,11 @@ int main(void)
         else if (!strcmp("fg", args[0]))
         {
             //bring a background process to foreground
+            if(args[1] == NULL)
+            {
+                printf("Process ID not specified");
+                continue;
+            }
             waitforjob(args[1]);
         }
         else if (!strcmp("cd", args[0]))
@@ -411,6 +439,9 @@ int main(void)
                 if(*home != NULL)
                 {
                     result = chdir(home);
+                } else {
+                    printf("cd: NO $HOME variable declared in the environment\n");
+                }
             }
             //go to specified directory
             else
@@ -420,7 +451,7 @@ int main(void)
                 result = chdir(args[1]);
                 if (result == -1)
                 {
-                    fprintf(stderr, "cd: %s: No such file or directory", args[1]);
+                    fprintf(stderr, "Failed to change directory: %s does not exist\n", args[1]);
                 }
                 //if everthing is fine
                 //change to destination directory
