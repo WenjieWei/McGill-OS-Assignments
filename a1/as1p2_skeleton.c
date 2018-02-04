@@ -232,7 +232,11 @@ int wordCount(char *filename, char *flag)
 
     //The file does not exist.
     if(fildes == NULL)
-        printf("COuld not openfile: %s", filename);
+    {
+        printf("The file does not exist\n");
+        if(strcmp(flag, "-l") || strcmp(flag, "-w"))
+            printf("Unrecognized flag\n");
+    }
 
     //file descriptor is a valid descriptor
     else
@@ -248,7 +252,7 @@ int wordCount(char *filename, char *flag)
                 if(charRead == '\n')
                     lines++;
             }
-            cnt = lines;
+            cnt = lines-1;
         }
         else if(!strcmp(flag, "-w"))
         //count words here
@@ -260,14 +264,16 @@ int wordCount(char *filename, char *flag)
                 fscanf(fildes, "%s", charBuf);
                 cnt++;
             }
+            cnt--;
         }
         else
         //the argument is not "-l" or "-w"
         {
-            printf("Invalid argument");
+            printf("Unrecognized flag\n");
+            cnt = 0;
         }
-        return cnt;
     }
+    return cnt;
 }
 
 // function to augment waiting times for a process
@@ -296,7 +302,7 @@ int waitforjob(char *jobnc)
     int jobFound = 0;
     while(trv != NULL)
     {
-        if(trv->pid == jobn || trv->number == jobn)
+        if(trv->number == jobn)
         {
             jobFound = 1;
             break;
@@ -309,6 +315,7 @@ int waitforjob(char *jobnc)
     //waitpid with proper argument needed here
     if(jobFound)
     {
+        printf("Bringing jobno %d and pid %d to the foreground\n", trv->number, trv->pid);
         waitpid(trv->pid, NULL, WUNTRACED);
     }
     return 0;
@@ -404,6 +411,7 @@ int main(void)
         while (!(cnt >= 1))
             cnt = getcmd("\n>> ", args, &bg, &nice);
 
+        waitForEmptyLL(nice, bg);
         //use the if-else ladder to handle built-in commands
         //built in commands don't need redirection
         //also no need to add them to jobs linked list
@@ -416,17 +424,21 @@ int main(void)
         else if (!strcmp("exit", args[0]))
         {
             //exit the execution of endless while loop
-            //TODO: kill all processes before exiting
+            //kill all processes before exiting
+            struct node *finishing_job;
+            while(head_job != NULL)
+            {
+                finishing_job = head_job;
+                kill(finishing_job->pid, SIGTERM);
+                //SIGTERM is used here to terminate the process.
+                head_job = head_job->next;
+                free(finishing_job);
+            }
             exit(0);
         }
         else if (!strcmp("fg", args[0]))
         {
             //bring a background process to foreground
-            if(args[1] == NULL)
-            {
-                printf("Process ID not specified");
-                continue;
-            }
             waitforjob(args[1]);
         }
         else if (!strcmp("cd", args[0]))
@@ -441,9 +453,7 @@ int main(void)
                 if(*home != NULL)
                 {
                     result = chdir(home);
-                } else {
-                    printf("cd: NO $HOME variable declared in the environment\n");
-                }
+                } 
             }
             //go to specified directory
             else
@@ -453,7 +463,7 @@ int main(void)
                 result = chdir(args[1]);
                 if (result == -1)
                 {
-                    fprintf(stderr, "Failed to change directory: %s does not exist\n", args[1]);
+                    printf("cd: %s: No such file or directory.", args[1]);
                 }
                 //if everthing is fine
                 //change to destination directory
@@ -463,8 +473,6 @@ int main(void)
         {
             //use getcwd and print the current working directory
             char cwdbuf[1024];
-            //getcwd(cwdbuf, sizeof(cwdbuf));
-            //printf("CWD is: %s\n", cwdbuf);
             if(getcwd(cwdbuf, sizeof(cwdbuf)) == NULL)
                 perror("getcwd() error.");
             else
