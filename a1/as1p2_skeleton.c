@@ -498,8 +498,22 @@ int main(void)
                 //printf("inside the parent\n");
                 if (bg == 0)
                 {
-                    //FOREGROUND
+                    //FOREGROUNDs
                     // waitpid with proper argument required
+                    int status;
+                    int wait_pid;
+                    process_id = pid;
+                    //If the process has terminated normally
+                    //WIFEXITED will return a number > 0
+                    //If the process has stopped, 
+                    //WIFSIGNALED will return a non zero value
+                    //If the process has terminated and produces a core dump
+                    //WCOREDUMP will return a non zero value
+                    do{
+                        wait_pid = waitpid(process_id, &status, WUNTRACED);
+                    } while (!WIFEXITED(status) && !WIFSIGNALED(status) && !WCOREDUMP(status));
+
+                    process_id = 0;
                 }
                 else
                 {
@@ -507,6 +521,7 @@ int main(void)
                     process_id = pid;
                     addToJobList(args);
                     // waitpid with proper argument required
+                    waitpid(pid, NULL, WNOHANG);
                 }
             }
             else
@@ -516,28 +531,46 @@ int main(void)
                 //introducing augmented delay
                 performAugmentedWait();
 
-                //check for redirection
+                //check for redirection                
                 //now you know what does args store
                 //check if args has ">"
                 //if yes set isred to 1
                 //else set isred to 0
-
                 //if redirection is enabled
+                int isred = 0;
+                int i = 0;
+                while(args[i] != NULL)
+                {
+                    if(!strcmp(">", args[i]))
+                    {
+                        isred = 1;
+                        break;
+                    }
+                    i++;
+                }
+
                 if (isred == 1)
                 {
                     //open file and change output from stdout to that
                     //make sure you use all the read write exec authorisation flags
                     //while you use open (man 2 open) to open file
+                    //fd1 is stdout
+                    //fd2 is the file
+                    fd1 = dup(1);
+                    fd2 = open(args[i+1], O_RDWR);
+                    dup2(fd2, 1);
 
                     //set ">" and redirected filename to NULL
-                    // args[i] = NULL;
-                    // args[i + 1] = NULL;
+                    args[i] = NULL;
+                    args[i + 1] = NULL;
 
-                    // //run your command
-                    // execvp(args[0], args);
+                    //run your command
+                    execvp(args[0], args);
 
-                    // //restore to stdout
-                    // fflush(stdout);
+                    //restore to stdout
+                    close(fd1);
+                    close(fd2);
+                    fflush(stdout);
                 }
                 else
                 {

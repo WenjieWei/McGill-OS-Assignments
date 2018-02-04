@@ -1,3 +1,6 @@
-Second: Print to redirect_out.txt
-This is a test. wc -l should output 2.
-
+a1_command_piping.c
+a1_redirect.c
+a.out
+as1p2_skeleton.c
+input.txt
+redirect_out.txt
