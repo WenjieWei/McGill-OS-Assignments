@@ -217,6 +217,7 @@ void waitForEmptyLL(int nice, int bg)
     {
         while (head_job != NULL)
         {
+            printf("checking linked list\n");
             sleep(1);
             refreshJobList();
         }
