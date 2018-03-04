@@ -10,8 +10,8 @@
  */
 
 //Please enter your name and McGill ID below
-//Name: <your name>
-//McGill ID: <magic number>
+//Name: Wenjie Wei
+//McGill ID: 260685967
 
  
 
