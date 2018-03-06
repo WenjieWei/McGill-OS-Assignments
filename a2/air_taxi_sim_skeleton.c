@@ -27,6 +27,12 @@ pthread_mutex_t threadMutex = PTHREAD_MUTEX_INITIALIZER;
 sem_t queueMutex;
 sem_t queueFull;
 
+struct arg_struct
+{
+    int *taxi_id;
+    int *taxi_waiting;
+};
+
 // A structure to represent a queue
 struct Queue
 {
@@ -154,29 +160,37 @@ void *FnAirplane(void *pl_id)
 }
 
 /* Consumer Function: simulates a taxi that takes n time to take a passenger home and come back to the airport */
-void *FnTaxi(void *tx_id)
+void *FnTaxi(void *arguments)
 {
-    int pr_id = *(int *)tx_id; //convert the void pointer to an integer
+    struct arg_struct *args = arguments;
+
+    int pr_id = *(int *)args->taxi_id; //convert the void pointer to an integer pointer
+    int waiting_ptr = *(int *)  args->taxi_waiting;
 
     while (1)
     {
-        printf("Taxi driver %d arrives\n", pr_id);
         sem_wait(&queueMutex);
-        if (isEmpty(queue))
-        {
-            sem_post(&queueMutex);
-            printf("Taxi driver %d waiting for passengers to enter the platform\n", pr_id);
-            while(isEmpty(queue));
+
+        if(waiting_ptr == 0){
+            printf("Taxi driver %d arrives\n", pr_id);
         }
-        else
-        {
-            int rider = dequeue(queue);
-            printf("Taxi driver %d picked up client %d\n", pr_id, rider);
+
+        if(isEmpty(queue) && waiting_ptr){
+            sem_post(&queueMutex);
+        } else if(isEmpty(queue) && !waiting_ptr){
+            waiting_ptr = 1;
+            sem_post(&queueMutex);
+            printf("Taxi driver %d waits for passengers to enter the platform\n", pr_id);
+        }
+        else{
+            printf("Taxi driver %d picked up passenger %d from the platform\n", pr_id, dequeue(queue));
             sem_post(&queueMutex);
 
-            int minute = rand() % 21 + 10;         //random travelling time from 10 to 30 min
-            int usec = (int)minute * 1000000 / 60; //travelling time in micro sec
-            usleep(usec);
+            int time_min = rand()% 11 + 20;
+            int time_usec = time_min * 1000000/60;
+
+            usleep(time_usec);
+            waiting_ptr = 0;
         }
     }
 }
@@ -207,6 +221,9 @@ int main(int argc, char *argv[])
     //create arrays of integer pointers to ids for taxi / airplane threads
     int *taxi_ids[num_taxis];
     int *airplane_ids[num_airplanes];
+    int taxi_waiting[num_taxis];
+    int *taxi_waiting_ptr[num_taxis];
+    struct arg_struct args;
 
     //create threads for airplanes
 
@@ -234,7 +251,13 @@ int main(int argc, char *argv[])
     {
         taxi_ids[j] = malloc(sizeof(int));
         *taxi_ids[j] = j;
-        if (pthread_create(&taxiThreads[j], NULL, FnTaxi, taxi_ids[j]))
+        taxi_waiting[j] = 0;
+        taxi_waiting_ptr[j] = malloc(sizeof(int));
+        *taxi_waiting_ptr[j] = taxi_waiting[j];
+
+        args.taxi_id = taxi_ids[j];
+        args.taxi_waiting = taxi_waiting_ptr[j];
+        if (pthread_create(&taxiThreads[j], NULL, FnTaxi, (void *)&args))
         {
             fprintf(stderr, "Failed to create thread.\n");
             return 1;
@@ -262,6 +285,7 @@ int main(int argc, char *argv[])
     }
 
     sem_destroy(&queueMutex);
+    sem_destroy(&queueFull);
     pthread_mutex_unlock(&threadMutex);
 
     pthread_exit(NULL);
