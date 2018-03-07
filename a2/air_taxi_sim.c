@@ -26,12 +26,7 @@ int BUFFER_SIZE = 100; //size of queue
 pthread_mutex_t threadMutex = PTHREAD_MUTEX_INITIALIZER;
 sem_t queueMutex;
 sem_t queueFull;
-
-struct arg_struct
-{
-    int *taxi_id;
-    int *taxi_waiting;
-};
+sem_t queueEmpty;
 
 // A structure to represent a queue
 struct Queue
@@ -134,24 +129,23 @@ void *FnAirplane(void *pl_id)
         int platform_id = 0;
         for (platform_id; platform_id < passengers_to_plat; platform_id++)
         {
-            //there is a racing condition here?
             int passenger_id = 1000000;
             passenger_id += cl_id * 1000;
             passenger_id += platform_id;
 
             sem_wait(&queueMutex);
-            if (!isFull(queue))
-            {
-                enqueue(queue, passenger_id);
-                printf("Passenger %d of airplane %d arrives to platform.\n", passenger_id, cl_id);
-                sem_post(&queueMutex);
-                sem_post(&queueFull);
-            }
-            else
-            {
-                printf("The platform queue is full. Rest of passengers of plane %d take the bus.\n", cl_id);
+            if(sem_trywait(&queueEmpty) != 0){
+                //the queue is not empty. no more space
+                printf("The rest passengers of airplane %d take the bus\n", cl_id);
+                // sem_wait(&queueEmpty);
                 sem_post(&queueMutex);
                 break;
+            } else {
+                printf("passenger %d arrive at the platform\n", passenger_id);
+                enqueue(queue, passenger_id);
+                sem_post(&queueMutex);
+                sem_post(&queueFull);
+                sem_wait(&queueEmpty);
             }
         }
 
@@ -160,38 +154,30 @@ void *FnAirplane(void *pl_id)
 }
 
 /* Consumer Function: simulates a taxi that takes n time to take a passenger home and come back to the airport */
-void *FnTaxi(void *arguments)
-{
-    struct arg_struct *args = arguments;
-
-    int pr_id = *(int *)args->taxi_id; //convert the void pointer to an integer pointer
-    int waiting_ptr = *(int *)  args->taxi_waiting;
+void *FnTaxi(void *tx_id){
+    int pr_id = *(int *)tx_id; //convert the void pointer to an integer pointer
 
     while (1)
     {
-        sem_wait(&queueMutex);
+        printf("taxi driver %d arrives\n", pr_id);
 
-        if(waiting_ptr == 0){
-            printf("Taxi driver %d arrives\n", pr_id);
-        }
-
-        if(isEmpty(queue) && waiting_ptr){
-            sem_post(&queueMutex);
-        } else if(isEmpty(queue) && !waiting_ptr){
-            waiting_ptr = 1;
-            sem_post(&queueMutex);
+        if(sem_trywait(&queueFull) != 0){
+            //use trywait here since we need the return value here. 
             printf("Taxi driver %d waits for passengers to enter the platform\n", pr_id);
+            sem_wait(&queueFull);
         }
-        else{
-            printf("Taxi driver %d picked up passenger %d from the platform\n", pr_id, dequeue(queue));
-            sem_post(&queueMutex);
 
-            int time_min = rand()% 11 + 20;
-            int time_usec = time_min * 1000000/60;
+        sem_wait(&queueMutex);
+        printf("taxi driver %d picked up passenger %d\n", pr_id, dequeue(queue));
 
-            usleep(time_usec);
-            waiting_ptr = 0;
-        }
+        int time_min = rand() % 11 + 20; //travel time in min
+        int time_usec = (int) time_min * 1000000/60; //travel time in usec
+        printf("taxi driver %d is going to travel %d minutes\n", pr_id, time_min);
+
+        sem_post(&queueEmpty);
+        sem_post(&queueMutex);
+        sem_wait(&queueFull);
+        usleep(time_usec);
     }
 }
 
@@ -215,15 +201,13 @@ int main(int argc, char *argv[])
     //declare arrays of threads and initialize semaphore(s)
     sem_init(&queueMutex, 0, 1);
     sem_init(&queueFull, 0, 0);
+    sem_init(&queueEmpty, 0, BUFFER_SIZE);
     pthread_t taxiThreads[num_taxis];
     pthread_t airplaneThreads[num_airplanes];
 
     //create arrays of integer pointers to ids for taxi / airplane threads
     int *taxi_ids[num_taxis];
     int *airplane_ids[num_airplanes];
-    int taxi_waiting[num_taxis];
-    int *taxi_waiting_ptr[num_taxis];
-    struct arg_struct args;
 
     //create threads for airplanes
 
@@ -251,13 +235,7 @@ int main(int argc, char *argv[])
     {
         taxi_ids[j] = malloc(sizeof(int));
         *taxi_ids[j] = j;
-        taxi_waiting[j] = 0;
-        taxi_waiting_ptr[j] = malloc(sizeof(int));
-        *taxi_waiting_ptr[j] = taxi_waiting[j];
-
-        args.taxi_id = taxi_ids[j];
-        args.taxi_waiting = taxi_waiting_ptr[j];
-        if (pthread_create(&taxiThreads[j], NULL, FnTaxi, (void *)&args))
+        if (pthread_create(&taxiThreads[j], NULL, FnTaxi, taxi_ids[j]))
         {
             fprintf(stderr, "Failed to create thread.\n");
             return 1;
@@ -268,7 +246,7 @@ int main(int argc, char *argv[])
     }
     //all created. unlock all the threads now.
     pthread_mutex_unlock(&threadMutex);
-    sleep(10);
+    sleep(5);
 
     //all threads have finished running,
     //shut down all the threads
