@@ -1,0 +1,239 @@
+You entered: 10 airplanes per hour
+You entered: 2 taxis
+Creating airplane thread 0
+Creating airplane thread 1
+Airplane 0 arrives with 9 passengers
+Creating airplane thread 2
+Airplane 1 arrives with 5 passengers
+passenger 1000000 arrive at the platform
+Airplane 2 arrives with 10 passengers
+passenger 1002000 arrive at the platform
+passenger 1002001 arrive at the platform
+passenger 1000001 arrive at the platform
+passenger 1000002 arrive at the platform
+passenger 1000003 arrive at the platform
+passenger 1000004 arrive at the platform
+passenger 1002002 arrive at the platform
+Creating airplane thread 3
+passenger 1001000 arrive at the platform
+passenger 1001001 arrive at the platform
+passenger 1001002 arrive at the platform
+passenger 1002003 arrive at the platform
+passenger 1000005 arrive at the platform
+passenger 1000006 arrive at the platform
+passenger 1002004 arrive at the platform
+passenger 1001003 arrive at the platform
+passenger 1001004 arrive at the platform
+Airplane 3 arrives with 10 passengers
+passenger 1003000 arrive at the platform
+Creating airplane thread 4
+passenger 1002005 arrive at the platform
+passenger 1002006 arrive at the platform
+passenger 1002007 arrive at the platform
+passenger 1002008 arrive at the platform
+passenger 1002009 arrive at the platform
+passenger 1003001 arrive at the platform
+passenger 1003002 arrive at the platform
+passenger 1003003 arrive at the platform
+passenger 1003004 arrive at the platform
+passenger 1003005 arrive at the platform
+passenger 1003006 arrive at the platform
+passenger 1000007 arrive at the platform
+passenger 1000008 arrive at the platform
+passenger 1003007 arrive at the platform
+passenger 1003008 arrive at the platform
+passenger 1003009 arrive at the platform
+Airplane 4 arrives with 5 passengers
+passenger 1004000 arrive at the platform
+passenger 1004001 arrive at the platform
+passenger 1004002 arrive at the platform
+passenger 1004003 arrive at the platform
+passenger 1004004 arrive at the platform
+Creating airplane thread 5
+Airplane 5 arrives with 9 passengers
+passenger 1005000 arrive at the platform
+passenger 1005001 arrive at the platform
+passenger 1005002 arrive at the platform
+passenger 1005003 arrive at the platform
+passenger 1005004 arrive at the platform
+passenger 1005005 arrive at the platform
+passenger 1005006 arrive at the platform
+passenger 1005007 arrive at the platform
+passenger 1005008 arrive at the platform
+Creating airplane thread 6
+Airplane 6 arrives with 6 passengers
+passenger 1006000 arrive at the platform
+passenger 1006001 arrive at the platform
+The rest passengers of airplane 6 take the bus
+Creating airplane thread 7
+Airplane 7 arrives with 8 passengers
+The rest passengers of airplane 7 take the bus
+Creating airplane thread 8
+Airplane 8 arrives with 6 passengers
+The rest passengers of airplane 8 take the bus
+Creating airplane thread 9
+Airplane 9 arrives with 10 passengers
+The rest passengers of airplane 9 take the bus
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1000000
+taxi driver 0 is going to travel 26 minutes
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1002000
+taxi driver 1 is going to travel 30 minutes
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1002001
+taxi driver 0 is going to travel 22 minutes
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1000001
+taxi driver 1 is going to travel 25 minutes
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1000002
+taxi driver 0 is going to travel 24 minutes
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1000003
+taxi driver 1 is going to travel 30 minutes
+Airplane 1 arrives with 9 passengers
+Airplane 5 arrives with 8 passengers
+passenger 1005000 arrive at the platform
+passenger 1001000 arrive at the platform
+passenger 1005001 arrive at the platform
+Airplane 3 arrives with 7 passengers
+The rest passengers of airplane 5 take the bus
+Airplane 7 arrives with 7 passengers
+The rest passengers of airplane 7 take the bus
+Airplane 8 arrives with 7 passengers
+Airplane 6 arrives with 5 passengers
+The rest passengers of airplane 8 take the bus
+Airplane 4 arrives with 7 passengers
+The rest passengers of airplane 6 take the bus
+Airplane 2 arrives with 8 passengers
+The rest passengers of airplane 1 take the bus
+The rest passengers of airplane 2 take the bus
+The rest passengers of airplane 3 take the bus
+The rest passengers of airplane 4 take the bus
+Airplane 9 arrives with 10 passengers
+Airplane 0 arrives with 8 passengers
+The rest passengers of airplane 0 take the bus
+The rest passengers of airplane 9 take the bus
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1000004
+taxi driver 0 is going to travel 25 minutes
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1002002
+taxi driver 1 is going to travel 26 minutes
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1001000
+taxi driver 0 is going to travel 28 minutes
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1001001
+taxi driver 1 is going to travel 20 minutes
+Airplane 5 arrives with 5 passengers
+Airplane 8 arrives with 6 passengers
+passenger 1008000 arrive at the platform
+passenger 1008001 arrive at the platform
+The rest passengers of airplane 8 take the bus
+Airplane 7 arrives with 8 passengers
+The rest passengers of airplane 5 take the bus
+Airplane 2 arrives with 10 passengers
+The rest passengers of airplane 2 take the bus
+Airplane 9 arrives with 5 passengers
+The rest passengers of airplane 9 take the bus
+Airplane 6 arrives with 10 passengers
+The rest passengers of airplane 6 take the bus
+Airplane 3 arrives with 6 passengers
+The rest passengers of airplane 7 take the bus
+Airplane 4 arrives with 8 passengers
+The rest passengers of airplane 3 take the bus
+Airplane 0 arrives with 5 passengers
+The rest passengers of airplane 0 take the bus
+The rest passengers of airplane 4 take the bus
+Airplane 1 arrives with 6 passengers
+The rest passengers of airplane 1 take the bus
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1001002
+taxi driver 0 is going to travel 24 minutes
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1002003
+taxi driver 1 is going to travel 23 minutes
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1000005
+taxi driver 0 is going to travel 30 minutes
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1000006
+taxi driver 1 is going to travel 27 minutes
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1002004
+taxi driver 0 is going to travel 29 minutes
+Airplane 2 arrives with 8 passengers
+Airplane 8 arrives with 7 passengers
+Airplane 7 arrives with 9 passengers
+Airplane 0 arrives with 8 passengers
+Airplane 5 arrives with 8 passengers
+Airplane 6 arrives with 8 passengers
+Airplane 1 arrives with 6 passengers
+Airplane 4 arrives with 6 passengers
+passenger 1007000 arrive at the platform
+Airplane 9 arrives with 8 passengers
+passenger 1009000 arrive at the platform
+passenger 1007001 arrive at the platform
+passenger 1008000 arrive at the platform
+The rest passengers of airplane 5 take the bus
+The rest passengers of airplane 0 take the bus
+The rest passengers of airplane 6 take the bus
+The rest passengers of airplane 1 take the bus
+The rest passengers of airplane 2 take the bus
+The rest passengers of airplane 4 take the bus
+Airplane 3 arrives with 10 passengers
+The rest passengers of airplane 3 take the bus
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1001003
+taxi driver 1 is going to travel 26 minutes
+The rest passengers of airplane 7 take the bus
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1001004
+taxi driver 1 is going to travel 24 minutes
+The rest passengers of airplane 8 take the bus
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1003000
+taxi driver 0 is going to travel 28 minutes
+The rest passengers of airplane 9 take the bus
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1002005
+taxi driver 1 is going to travel 21 minutes
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1002006
+taxi driver 0 is going to travel 30 minutes
+Airplane 0 arrives with 5 passengers
+Airplane 5 arrives with 9 passengers
+passenger 1005000 arrive at the platform
+Airplane 1 arrives with 10 passengers
+passenger 1001000 arrive at the platform
+Airplane 4 arrives with 7 passengers
+Airplane 3 arrives with 10 passengers
+Airplane 6 arrives with 10 passengers
+The rest passengers of airplane 0 take the bus
+Airplane 2 arrives with 7 passengers
+The rest passengers of airplane 2 take the bus
+The rest passengers of airplane 3 take the bus
+The rest passengers of airplane 4 take the bus
+The rest passengers of airplane 6 take the bus
+Airplane 7 arrives with 10 passengers
+The rest passengers of airplane 7 take the bus
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1002007
+taxi driver 1 is going to travel 29 minutes
+The rest passengers of airplane 1 take the bus
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1002008
+taxi driver 0 is going to travel 22 minutes
+The rest passengers of airplane 5 take the bus
+Airplane 8 arrives with 10 passengers
+The rest passengers of airplane 8 take the bus
+Airplane 9 arrives with 7 passengers
+The rest passengers of airplane 9 take the bus
+taxi driver 1 arrives
+taxi driver 1 picked up passenger 1002009
+taxi driver 1 is going to travel 25 minutes
+taxi driver 0 arrives
+taxi driver 0 picked up passenger 1003001
+taxi driver 0 is going to travel 24 minutes
