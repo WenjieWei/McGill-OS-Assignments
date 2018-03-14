@@ -1,1 +1,12 @@
+# Tutorial before Midterm 2
 
+Sample exam problems (most from F2016 Final). 
+# Scheduling Problems
+Round-robin (RR) 
+
+1. COnsider 4 jobs arrive at the scheduler at time 0 with the following burst (run time) requirements: J_1(10), J_2(15), J_3(20), J_4(8)
+. If RR is used as CPU scheduling policy, what would be the completion time?
+  A: Assume RR quantum of 5us, at t=5us, interrupt J_1. Noted as J_1(5), the number in bracket indicates how much time left.
+  the timeline is going to be:
+J_1(5), J_2(10), J_3(15), J_4(3), J_1(0), J_2(5), J_3(10), J_4(0) (Finishes at t=38, relinquish the CPU), J_2(0), J_3(5), J_3(0)
+  
