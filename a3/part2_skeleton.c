@@ -1,3 +1,6 @@
+//Name: Wenjie Wei
+//McGILL ID: 260685967
+
 #include <stdio.h>  //for printf and scanf
 #include <stdlib.h> //for malloc
 
