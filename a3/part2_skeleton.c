@@ -132,7 +132,7 @@ void accessSCAN(int *request, int numRequest)
         twdLow = 1;
     else if (START == LOW)
         twdLow = 0;
-    else if(START == HIGH)
+    else if (START == HIGH)
         twdLow = 1;
     else
         twdLow = 0;
@@ -163,7 +163,8 @@ void accessSCAN(int *request, int numRequest)
         if (!twdLow)
         {
             index = i + 1;
-            for(index; index < numRequest; index++){
+            for (index; index < numRequest; index++)
+            {
                 sequence[j] = request[index];
                 request[index] = -1;
                 j++;
@@ -173,7 +174,8 @@ void accessSCAN(int *request, int numRequest)
         else
         {
             index = i;
-            for(index; index >= 0; index--){
+            for (index; index >= 0; index--)
+            {
                 sequence[j] = request[index];
                 request[index] = -1;
                 j++;
@@ -192,16 +194,87 @@ void accessSCAN(int *request, int numRequest)
     return;
 }
 
-// //access the disk location in CSCAN
-// void accessCSCAN(int *request, int numRequest)
-// {
-//     //write your logic here
-//     printf("\n----------------\n");
-//     printf("CSCAN :");
-//     printSeqNPerformance(newRequest, newCnt);
-//     printf("----------------\n");
-//     return;
-// }
+//access the disk location in CSCAN
+void accessCSCAN(int *request, int numRequest)
+{
+    //write your logic here
+    //use qsort to sort the array of requests
+    qsort(request, numRequest, sizeof(int), cmpfunc);
+
+    //define new array of output sequences
+    int *sequence, twdLow, finish, index, i;
+    sequence = malloc(numRequest * sizeof(int));
+
+    //flag indicating the moving direction of the head
+    if (START < (HIGH / 2))
+        twdLow = 1;
+    else
+        twdLow = 0;
+
+    //flag indicating if the entire process is finished
+    finish = 0;
+
+    //define new variable CURR to indicate the position of the head
+    int CURR = START;
+
+    //variable for the index of the sequence
+    index = 0;
+
+    //determine where START is fitting
+    //i is the position where request[i] <= START
+    //i is the position where request[i+1] > START
+    if (START <= request[0])
+        i = 0;
+    else if (START >= request[numRequest - 1])
+        i = numRequest - 1;
+    else
+    {
+        for (i = 0; i < numRequest; i++)
+        {
+            if (request[i] <= START && request[i + 1] > START)
+            {
+                break;
+            }
+        }
+    }
+
+    int record = i;
+    if(twdLow){
+        //move the head towards low
+        for(i; i>=0; i--){
+            sequence[index] = request[i];
+            index++;
+        }
+        //now the head has moved to the LOW extreme
+        //fly to HIGH and decrement again
+        for(i = numRequest-1; i>record; i--){
+            sequence[index] = request[i];
+            index++;
+        }
+    } else {
+        i++;
+        //move the head towards high
+        for(i; i<HIGH; i++){
+            sequence[index] = request[i];
+            index++;
+        }
+        //now the head has moved to HIGH
+        //go to LOW and increment again
+        for(i=0; i<=record; i++){
+            sequence[index] = request[i];
+            index++;
+        }
+    }
+
+    //TODO: CSCAN does take the fly back into account for performance
+    //need to think about a way to cancel it
+    //maybe creating another sequence would do. 
+    printf("\n----------------\n");
+    printf("CSCAN :");
+    printSeqNPerformance(sequence, numRequest);
+    printf("----------------\n");
+    return;
+}
 
 // //access the disk location in LOOK
 // void accessLOOK(int *request, int numRequest)
@@ -268,10 +341,10 @@ int main()
         accessSCAN(request, numRequest);
         break;
 
-        //     //access the disk location in CSCAN
-        // case 4:
-        //     accessCSCAN(request, numRequest);
-        //     break;
+        //access the disk location in CSCAN
+    case 4:
+        accessCSCAN(request, numRequest);
+        break;
 
         // //access the disk location in LOOK
         // case 5:
