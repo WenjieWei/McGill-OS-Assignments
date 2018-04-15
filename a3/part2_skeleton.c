@@ -202,8 +202,9 @@ void accessCSCAN(int *request, int numRequest)
     qsort(request, numRequest, sizeof(int), cmpfunc);
 
     //define new array of output sequences
-    int *sequence, twdLow, finish, index, i;
-    sequence = malloc(numRequest * sizeof(int));
+    int *sequence, twdLow, finish, index, i, newCnt;
+    sequence = malloc((numRequest+2) * sizeof(int));
+    newCnt = numRequest + 2;
 
     //flag indicating the moving direction of the head
     if (START < (HIGH / 2))
@@ -240,21 +241,30 @@ void accessCSCAN(int *request, int numRequest)
 
     //record the starting position
     int record = i;
+
+    //start scanning
     if (twdLow)
     {
         //move the head towards low
         for (i; i >= 0; i--)
         {
             sequence[index] = request[i];
+            request[i] = -1;
             index++;
         }
         //now the head has moved to the LOW extreme
+        sequence[index] = LOW;
+        index++;
         //fly to HIGH and decrement again
-        printf("The head travels from LOW to HIGH.\n");
-        for (i = numRequest - 1; i > record; i--)
+        sequence[index] = HIGH;
+        index++;
+        for (i = numRequest - 1; i >=0; i--)
         {
-            sequence[index] = request[i];
-            index++;
+            if(request[i] > 0){
+                sequence[index] = request[i];
+                request[i] = -1;
+                index++;
+            }
         }
     }
     else
@@ -268,6 +278,10 @@ void accessCSCAN(int *request, int numRequest)
         }
         printf("The head travels from HIGH to LOW.\n");
         //now the head has moved to HIGH
+        sequence[index] = HIGH;
+        index++;
+        sequence[index] = LOW;
+        index++;
         //go to LOW and increment again
         for (i = 0; i <= record; i++)
         {
@@ -275,13 +289,10 @@ void accessCSCAN(int *request, int numRequest)
             index++;
         }
     }
-
-    //TODO: CSCAN does take the fly back into account for performance
-    //need to think about a way to cancel it
-    //maybe creating another sequence would do.
+    
     printf("\n----------------\n");
     printf("CSCAN :");
-    printSeqNPerformance(sequence, numRequest);
+    printSeqNPerformance(sequence, newCnt);
     printf("----------------\n");
     return;
 }
