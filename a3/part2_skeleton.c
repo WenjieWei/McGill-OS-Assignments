@@ -122,8 +122,9 @@ void accessSCAN(int *request, int numRequest)
     qsort(request, numRequest, sizeof(int), cmpfunc);
 
     //define a new array of int to store the new request sequence
-    int *sequence, twdLow, finish, i, j, remaining, index;
-    sequence = malloc(numRequest * sizeof(int));
+    int *sequence, twdLow, finish, i, j, remaining, index, newCnt;
+    sequence = malloc((numRequest + 1) * sizeof(int));
+    newCnt = numRequest + 1;
 
     //flag to indicate if the entire process is finished
     finish = 0;
@@ -169,6 +170,14 @@ void accessSCAN(int *request, int numRequest)
                 request[index] = -1;
                 j++;
             }
+
+            if (j == (numRequest + 1)){
+                finish = 1;
+                break;
+            }
+
+            sequence[j] = HIGH;
+            j++;
             twdLow = 1;
         }
         else
@@ -180,16 +189,20 @@ void accessSCAN(int *request, int numRequest)
                 request[index] = -1;
                 j++;
             }
+
+            if (j == (numRequest + 1)){
+                finish = 1;
+                break;
+            }
+            sequence[j] = LOW;
+            j++;
             twdLow = 0;
         }
-
-        if (j == (numRequest))
-            finish = 1;
     }
 
     printf("\n----------------\n");
     printf("SCAN :");
-    printSeqNPerformance(sequence, numRequest);
+    printSeqNPerformance(sequence, newCnt);
     printf("----------------\n");
     return;
 }
@@ -383,8 +396,9 @@ void accessLOOK(int *request, int numRequest)
 void accessCLOOK(int *request, int numRequest)
 {
     //write your logic here
-    int *sequence, twdLow, index, i, record;
-    sequence = malloc(numRequest * sizeof(int));
+    int *sequence, twdLow, index, i, record, newCnt;
+    sequence = malloc((numRequest+1) * sizeof(int));
+    newCnt = numRequest + 1;
 
     qsort(request, numRequest, sizeof(int), cmpfunc);
 
@@ -423,6 +437,9 @@ void accessCLOOK(int *request, int numRequest)
         }
         //now we've finished looking for requests in the direction to LOW
         //reverse the head to HIGH and start again.
+        sequence[index] = HIGH;
+        index++;
+
         for(i = numRequest; i>=0; i--){
             if(request[i] > 0){
                 sequence[index] = request[i];
@@ -441,6 +458,8 @@ void accessCLOOK(int *request, int numRequest)
         }
         //now there's no more request in the direction to HIGH
         //reverse the head to LOW and start again.
+        sequence[index] = LOW;
+        index++;
         for(i=0; i<= record; i++){
             sequence[index] < request[i];
             request[i] = -1;
@@ -450,7 +469,7 @@ void accessCLOOK(int *request, int numRequest)
 
     printf("\n----------------\n");
     printf("CLOOK :");
-    printSeqNPerformance(sequence, numRequest);
+    printSeqNPerformance(sequence, newCnt);
     printf("----------------\n");
     return;
 }
