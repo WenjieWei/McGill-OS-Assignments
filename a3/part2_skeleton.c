@@ -238,29 +238,39 @@ void accessCSCAN(int *request, int numRequest)
         }
     }
 
+    //record the starting position
     int record = i;
-    if(twdLow){
+    if (twdLow)
+    {
         //move the head towards low
-        for(i; i>=0; i--){
+        for (i; i >= 0; i--)
+        {
             sequence[index] = request[i];
             index++;
         }
         //now the head has moved to the LOW extreme
         //fly to HIGH and decrement again
-        for(i = numRequest-1; i>record; i--){
+        printf("The head travels from LOW to HIGH.\n");
+        for (i = numRequest - 1; i > record; i--)
+        {
             sequence[index] = request[i];
             index++;
         }
-    } else {
+    }
+    else
+    {
         i++;
         //move the head towards high
-        for(i; i<HIGH; i++){
+        for (i; i < HIGH; i++)
+        {
             sequence[index] = request[i];
             index++;
         }
+        printf("The head travels from HIGH to LOW.\n");
         //now the head has moved to HIGH
         //go to LOW and increment again
-        for(i=0; i<=record; i++){
+        for (i = 0; i <= record; i++)
+        {
             sequence[index] = request[i];
             index++;
         }
@@ -268,7 +278,7 @@ void accessCSCAN(int *request, int numRequest)
 
     //TODO: CSCAN does take the fly back into account for performance
     //need to think about a way to cancel it
-    //maybe creating another sequence would do. 
+    //maybe creating another sequence would do.
     printf("\n----------------\n");
     printf("CSCAN :");
     printSeqNPerformance(sequence, numRequest);
@@ -276,27 +286,163 @@ void accessCSCAN(int *request, int numRequest)
     return;
 }
 
-// //access the disk location in LOOK
-// void accessLOOK(int *request, int numRequest)
-// {
-//     //write your logic here
-//     printf("\n----------------\n");
-//     printf("LOOK :");
-//     printSeqNPerformance(newRequest, newCnt);
-//     printf("----------------\n");
-//     return;
-// }
+//access the disk location in LOOK
+void accessLOOK(int *request, int numRequest)
+{
+    int *sequence, newCnt, twdLow, index, i, record;
+    sequence = malloc(numRequest * sizeof(int));
+
+    qsort(request, numRequest, sizeof(int), cmpfunc);
+
+    if (START < (HIGH / 2))
+        twdLow = 1;
+    else
+        twdLow = 0;
+
+    //variable for the index of the sequence
+    index = 0;
+
+    //determine where START is fitting
+    //i is the position where request[i] <= START
+    //i is the position where request[i+1] > START
+    if (START <= request[0])
+        i = 0;
+    else if (START >= request[numRequest - 1])
+        i = numRequest - 1;
+    else
+    {
+        for (i = 0; i < numRequest; i++)
+        {
+            if (request[i] <= START && request[i + 1] > START)
+            {
+                break;
+            }
+        }
+    }
+
+    if (twdLow)
+    {
+        //move the head towards low
+        for (i; i >= 0; i--)
+        {
+            sequence[index] = request[i];
+            request[i] = -1;
+            index++;
+        }
+        //now we've finished looking for requests in the direction to LOW
+        //reverse the direction to look for more requests in the direction of HIGH
+        for (i; i < numRequest; i++)
+        {
+            if (request[i] > 0)
+            {
+                sequence[index] = request[i];
+                request[i] = -1;
+                index++;
+            }
+        }
+    }
+    else
+    {
+        i++;
+        //move the head towards the higher end in request array
+        for (i; i < numRequest; i++)
+        {
+            sequence[index] = request[i];
+            request[i] = -1;
+            index++;
+        }
+        //now there is no more request in the direction to HIGH
+        //reverse the direction
+        for (i = 0; i <= record; i++)
+        {
+            sequence[index] = request[i];
+            request[i] = -1;
+            index++;
+        }
+    }
+    //write your logic here
+    printf("\n----------------\n");
+    printf("LOOK :");
+    printSeqNPerformance(sequence, numRequest);
+    printf("----------------\n");
+    return;
+}
 
 // //access the disk location in CLOOK
-// void accessCLOOK(int *request, int numRequest)
-// {
-//     //write your logic here
-//     printf("\n----------------\n");
-//     printf("CLOOK :");
-//     printSeqNPerformance(newRequest, newCnt);
-//     printf("----------------\n");
-//     return;
-// }
+void accessCLOOK(int *request, int numRequest)
+{
+    //write your logic here
+    int *sequence, twdLow, index, i, record;
+    sequence = malloc(numRequest * sizeof(int));
+
+    qsort(request, numRequest, sizeof(int), cmpfunc);
+
+    if(START < (HIGH / 2))
+        twdLow = 1;
+    else 
+        twdLow = 0;
+
+    //variable for the index of the sequence
+    index = 0;
+
+    //determine where START is fitting
+    //i is the position where request[i] <= START
+    //i is the position where request[i+1] > START
+    if (START <= request[0])
+        i = 0;
+    else if (START >= request[numRequest - 1])
+        i = numRequest - 1;
+    else
+    {
+        for (i = 0; i < numRequest; i++)
+        {
+            if (request[i] <= START && request[i + 1] > START)
+            {
+                break;
+            }
+        }
+    }
+
+    if(twdLow){
+        //move the head towards low if there is any request in the low direction
+        for(i; i>= 0; i--){
+            sequence[index] = request[i];
+            request[i] = -1;
+            index++;
+        }
+        //now we've finished looking for requests in the direction to LOW
+        //reverse the head to HIGH and start again.
+        for(i = numRequest; i>=0; i--){
+            if(request[i] > 0){
+                sequence[index] = request[i];
+                request[i] = -1;
+                index ++;
+            }
+        }
+    }
+    else{
+        i++;
+        //move the head towards HIGH 
+        for(i; i<numRequest; i++){
+            sequence[index] = request[i];
+            request[i] = -1;
+            index++;
+        }
+        //now there's no more request in the direction to HIGH
+        //reverse the head to LOW and start again.
+        for(i=0; i<= record; i++){
+            sequence[index] < request[i];
+            request[i] = -1;
+            index++;
+        }
+    }
+
+    printf("\n----------------\n");
+    printf("CLOOK :");
+    printSeqNPerformance(sequence, numRequest);
+    printf("----------------\n");
+    return;
+}
 
 int main()
 {
@@ -346,15 +492,15 @@ int main()
         accessCSCAN(request, numRequest);
         break;
 
-        // //access the disk location in LOOK
-        // case 5:
-        //     accessLOOK(request, numRequest);
-        //     break;
+    //access the disk location in LOOK
+    case 5:
+        accessLOOK(request, numRequest);
+        break;
 
-        // //access the disk location in CLOOK
-        // case 6:
-        //     accessCLOOK(request, numRequest);
-        //     break;
+    // //access the disk location in CLOOK
+    case 6:
+        accessCLOOK(request, numRequest);
+        break;
 
     default:
         break;
