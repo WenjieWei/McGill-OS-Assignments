@@ -1,21 +1,189 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <semaphore.h>
 
 //declare thread mutex
 pthread_mutex_t threadMutex = PTHREAD_MUTEX_INITIALIZER;
-int numProcesses, numResources, *resources, *maxRequests, *allocated, *need;
+sem_t allocateMutex;
+int numProcesses, numResources, *resources, **maxRequests, **allocated, **need;
+int *work, *finish;
 
-void *request_resources(void *pros_id)
+int isSafe(int pr_id)
 {
-    int pr_id = *(int *)pros_id;
-    int *request, j;
-    request = malloc(numResources * sizeof(int));
-    for(j = 0; j<numResources; j++){
-        request[j] = rand() % (maxRequests[pr_id][j]+1);
+    int isSafe = 0;
+
+    int i, j;
+    work = malloc(numResources * sizeof(int));
+    finish = malloc(numProcesses * sizeof(int));
+
+    //step 1: initialization work & safe
+    for (j = 0; j < numResources; j++)
+    {
+        work[j] = resources[j];
+    }
+    for (i = 0; i < numProcesses; i++)
+    {
+        finish[i] = 0;
+    }
+
+    for (i = 0; i < numProcesses; i++)
+    {
+        for (j = 0; j < numResources; j++)
+        {
+            //step 2
+            if (finish[i] == 0 && need[pr_id][j] <= work[j])
+            {
+                //step 3
+                work[j] += allocated[pr_id][j];
+                finish[i] = 1;
+
+                //loop check every threads starting from the beginning
+                i = -1;
+                break;
+            }
+        }
+    }
+    //finish of the NEED matrix, no such process. Proceed to step 4
+
+    //step 4
+    for (i = 0; i < numProcesses; i++)
+    {
+        if (finish[i] == 0)
+        {
+            isSafe = 0;
+        }
+        else
+            isSafe = 1;
+    }
+    return isSafe;
+}
+
+//Simulating resource allocation
+//return: 1 on success
+//0 on failure
+//-1 on error
+int request_resources(int pr_id, int *request)
+{
+    int i, j, breakFlag, continueFlag;
+    for (j = 0; j < numResources; j++)
+    {
+        request[j] = rand() % (maxRequests[pr_id][j] + 1);
+    }
+
+    //now run the banker's algorithm
+    //start with the verification step
+    while (1)
+    {
+        //two flags to indicate continue or break from the while loop.
+        breakFlag = 0;
+        continueFlag = 0;
+
+        //step 1
+        for (j = 0; j < numResources; j++)
+        {
+            if (request[j] > need[pr_id][j])
+            {
+                printf("Error trying to allocate resources.\n");
+                printf("Requesting more resources than needed.\n");
+                breakFlag = 1;
+                return -1;
+            }
+        }
+
+        //step 2
+        for (j = 0; j < numResources; j++)
+        {
+            if (request[j] > resources[j])
+            {
+                //go back to step 1
+                //continue from the beginning of while loop
+                continueFlag = 1;
+                break;
+            }
+        }
+        if (continueFlag)
+            continue;
+
+        //step 3
+        //provisional allocation
+        //use of mutex
+        // sem_wait(&allocateMutex);
+        pthread_mutex_lock(&threadMutex);
+        for (j = 0; j < numResources; j++)
+        {
+            resources[j] -= request[j];
+            allocated[pr_id][j] += request[j];
+            need[pr_id][j] -= request[j];
+        }
+
+        if (isSafe(pr_id))
+        {
+            pthread_mutex_unlock(&threadMutex);
+            printf("Safe to grant resources");
+            //return 1 to indicate safe
+            return 1;
+        }
+        else
+        {
+            //unsafe, relinquish all the resources granted.
+            //go back to step 1
+            printf("System is not safe to grant resources, canceling.\n");
+            for (j = 0; j < numResources; j++)
+            {
+                resources[j] += request[j];
+                allocated[pr_id][j] -= request[j];
+                need[pr_id][j] += request[j];
+            }
+            pthread_mutex_unlock(&threadMutex);
+            return 0;
+        }
+        // sem_post(&allocateMutex);
+
+        // if (breakFlag)
+        //     break;
+        // if (continueFlag)
+        //     continue;
     }
 }
 
+void *bankers(void *pros_id)
+{
+    int pr_id = *(int *)pros_id;
+
+    int *request, i, j, pros_finished;
+    request = malloc(numResources * sizeof(int));
+    //generate random request array
+    printf("The resource vector request is: ");
+    for (j = 0; j < numResources; j++)
+    {
+        request[j] = rand() % (need[pr_id][j] + 1);
+        printf("%d ", request[j]);
+    }
+    printf("\n");
+
+    //a simple busy waiting if allocation is not safe
+    while (!request_resources(pr_id, request))
+    {
+        ;
+    }
+
+    //check if there are remaining processes that haven't been allocated resources
+    for (j = 0; j < numResources; j++)
+    {
+        if (need[pr_id][j] != 0)
+            pros_finished = 0;
+        else
+            pros_finished = 1;
+    }
+
+    if (!pros_finished)
+    {
+        sleep(3);
+        bankers(pros_id);
+    }
+}
 int main()
 {
     //request user inputs for number of processes and resources
@@ -36,18 +204,49 @@ int main()
     }
 
     //initialize the 2-D array of maximum requests
-    maxRequests = malloc(numResources * sizeof(int *));
+    maxRequests = malloc(numProcesses * sizeof(int *));
 
     printf("Enter maximum resources each process can claim:\n");
     printf("Press Enter to finish inputting the requested %d resources for each process.\n", numResources);
-    for(i=0; i<numResources; i++){
-        maxRequests = malloc(numProcesses * sizeof(int));
+    for (i = 0; i < numProcesses; i++)
+    {
+        maxRequests[i] = malloc(numResources * sizeof(int));
+    }
+
+    for (i = 0; i < numProcesses; i++)
+    {
+        for (j = 0; j < numResources; j++)
+        {
+            scanf("%d", &maxRequests[i][j]);
+        }
     }
 
     //initialize allocation table
-    allocated = malloc(numResources * sizeof(int *));
-    for(i=0; i<numResources; i++){
-        allocated = malloc(numProcesses * sizeof(int));
+    allocated = malloc(numProcesses * sizeof(int *));
+    for (i = 0; i < numProcesses; i++)
+    {
+        allocated[i] = malloc(numResources * sizeof(int));
+    }
+    for (i = 0; i < numProcesses; i++)
+    {
+        for (j = 0; j < numResources; j++)
+        {
+            allocated[i][j] = 0;
+        }
+    }
+
+    //initialize the need table
+    need = malloc(numProcesses * sizeof(int *));
+    for (i = 0; i < numProcesses; i++)
+    {
+        need[i] = malloc(numResources * sizeof(int));
+    }
+    for (i = 0; i < numProcesses; i++)
+    {
+        for (j = 0; j < numResources; j++)
+        {
+            need[i][j] = maxRequests[i][j] - allocated[i][j];
+        }
     }
 
     //test the intialized values
@@ -60,6 +259,7 @@ int main()
     printf("\n");
 
     //print the allocated table
+    printf("The allocated table is: \n");
     for (i = 0; i < numProcesses; i++)
     {
         for (j = 0; j < numResources; j++)
@@ -92,19 +292,17 @@ int main()
     srand(time(NULL));
 
     //initalize all threads to simulate the processes
-    pthread_t procSim[numProcesses];
+    pthread_t pros_threads[numProcesses];
 
     //create arrays of integer pointers to ids of threads
     //who simulate the processes
-    int *pr_id;
-    pr_id = malloc(numProcesses * sizeof(int));
+    int *pros_id[numProcesses];
 
-    //create all the threads for simulation
-    pthread_mutex_lock(&threadMutex);
     for (i = 0; i < numProcesses; i++)
     {
-        pr_id[i] = i;
-        if (pthread_create(&pr_id[i], NULL, request_resources; pr_id[i]))
+        pros_id[i] = malloc(sizeof(int));
+        *pros_id[i] = i;
+        if (pthread_create(&pros_threads[i], NULL, bankers, pros_id[i]))
         {
             fprintf(stderr, "Failed to create thread.\n");
             return 1;
@@ -113,8 +311,7 @@ int main()
         {
         }
     }
-    //all created. unlock the threads
-    pthread_mutex_unlock(&threadMutex);
 
+    pthread_exit(NULL);
     return 0;
 }
