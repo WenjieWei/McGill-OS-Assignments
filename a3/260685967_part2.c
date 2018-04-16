@@ -14,7 +14,7 @@ and falls under the McGill code of conduct, to the best of my knowledge.
 
 #define LOW 0
 #define HIGH 199
-#define START 53
+#define START 108
 
 //compare function for qsort
 //you might have to sort the request array
@@ -171,7 +171,8 @@ void accessSCAN(int *request, int numRequest)
                 j++;
             }
 
-            if (j == (numRequest + 1)){
+            if (j == (numRequest + 1))
+            {
                 finish = 1;
                 break;
             }
@@ -190,7 +191,8 @@ void accessSCAN(int *request, int numRequest)
                 j++;
             }
 
-            if (j == (numRequest + 1)){
+            if (j == (numRequest + 1))
+            {
                 finish = 1;
                 break;
             }
@@ -216,7 +218,7 @@ void accessCSCAN(int *request, int numRequest)
 
     //define new array of output sequences
     int *sequence, twdLow, finish, index, i, newCnt;
-    sequence = malloc((numRequest+2) * sizeof(int));
+    sequence = malloc((numRequest + 2) * sizeof(int));
     newCnt = numRequest + 2;
 
     //flag indicating the moving direction of the head
@@ -271,9 +273,10 @@ void accessCSCAN(int *request, int numRequest)
         //fly to HIGH and decrement again
         sequence[index] = HIGH;
         index++;
-        for (i = numRequest - 1; i >=0; i--)
+        for (i = numRequest - 1; i >= 0; i--)
         {
-            if(request[i] > 0){
+            if (request[i] > 0)
+            {
                 sequence[index] = request[i];
                 request[i] = -1;
                 index++;
@@ -284,10 +287,14 @@ void accessCSCAN(int *request, int numRequest)
     {
         i++;
         //move the head towards high
-        for (i; i < HIGH; i++)
+        for (i; i < numRequest; i++)
         {
-            sequence[index] = request[i];
-            index++;
+            if (request[i] >= 0)
+            {
+                sequence[index] = request[i];
+                request[i] = -1;
+                index++;
+            }
         }
         printf("The head travels from HIGH to LOW.\n");
         //now the head has moved to HIGH
@@ -296,13 +303,17 @@ void accessCSCAN(int *request, int numRequest)
         sequence[index] = LOW;
         index++;
         //go to LOW and increment again
-        for (i = 0; i <= record; i++)
+        for (i = 0; i <= numRequest; i++)
         {
-            sequence[index] = request[i];
-            index++;
+            if (request[i] >= 0)
+            {
+                sequence[index] = request[i];
+                request[i] = -1;
+                index++;
+            }
         }
     }
-    
+
     printf("\n----------------\n");
     printf("CSCAN :");
     printSeqNPerformance(sequence, newCnt);
@@ -371,17 +382,23 @@ void accessLOOK(int *request, int numRequest)
         //move the head towards the higher end in request array
         for (i; i < numRequest; i++)
         {
-            sequence[index] = request[i];
-            request[i] = -1;
-            index++;
+            if (request[i] >= 0)
+            {
+                sequence[index] = request[i];
+                request[i] = -1;
+                index++;
+            }
         }
         //now there is no more request in the direction to HIGH
         //reverse the direction
-        for (i = 0; i <= record; i++)
+        for (i = i - 1; i >= 0; i--)
         {
-            sequence[index] = request[i];
-            request[i] = -1;
-            index++;
+            if (request[i] >= 0)
+            {
+                sequence[index] = request[i];
+                request[i] = -1;
+                index++;
+            }
         }
     }
     //write your logic here
@@ -397,14 +414,14 @@ void accessCLOOK(int *request, int numRequest)
 {
     //write your logic here
     int *sequence, twdLow, index, i, record, newCnt;
-    sequence = malloc((numRequest+1) * sizeof(int));
+    sequence = malloc((numRequest + 1) * sizeof(int));
     newCnt = numRequest + 1;
 
     qsort(request, numRequest, sizeof(int), cmpfunc);
 
-    if(START < (HIGH / 2))
+    if (START < (HIGH / 2))
         twdLow = 1;
-    else 
+    else
         twdLow = 0;
 
     //variable for the index of the sequence
@@ -428,9 +445,11 @@ void accessCLOOK(int *request, int numRequest)
         }
     }
 
-    if(twdLow){
+    if (twdLow)
+    {
         //move the head towards low if there is any request in the low direction
-        for(i; i>= 0; i--){
+        for (i; i >= 0; i--)
+        {
             sequence[index] = request[i];
             request[i] = -1;
             index++;
@@ -440,30 +459,41 @@ void accessCLOOK(int *request, int numRequest)
         sequence[index] = HIGH;
         index++;
 
-        for(i = numRequest; i>=0; i--){
-            if(request[i] > 0){
+        for (i = numRequest; i >= 0; i--)
+        {
+            if (request[i] > 0)
+            {
                 sequence[index] = request[i];
                 request[i] = -1;
-                index ++;
+                index++;
             }
         }
     }
-    else{
+    else
+    {
         i++;
-        //move the head towards HIGH 
-        for(i; i<numRequest; i++){
-            sequence[index] = request[i];
-            request[i] = -1;
-            index++;
+        //move the head towards HIGH
+        for (i; i < numRequest; i++)
+        {
+            if (request[i] >= 0)
+            {
+                sequence[index] = request[i];
+                request[i] = -1;
+                index++;
+            }
         }
         //now there's no more request in the direction to HIGH
         //reverse the head to LOW and start again.
         sequence[index] = LOW;
         index++;
-        for(i=0; i<= record; i++){
-            sequence[index] < request[i];
-            request[i] = -1;
-            index++;
+        for (i = 0; i < numRequest; i++)
+        {
+            if (request[i] >= 0)
+            {
+                sequence[index] = request[i];
+                request[i] = -1;
+                index++;
+            }
         }
     }
 
